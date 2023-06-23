@@ -34,14 +34,10 @@ if select_model == "1":
         )
 
     start_chat = os.getenv("USE_EXISTING_CHAT", False)
-    if os.getenv("USE_GPT4") == "True":
-        model = "gpt4"
-    else:
-        model = "default"
-
+    model = "gpt4" if os.getenv("USE_GPT4") == "True" else "default"
     if start_chat:
         chat_id = os.getenv("CHAT_ID")
-        if chat_id == None:
+        if chat_id is None:
             raise ValueError("You have to set up your chat-id in the .env file")
         llm = ChatGPTAPI.ChatGPT(
             token=os.environ["CHATGPT_TOKEN"], conversation=chat_id, model=model
@@ -100,13 +96,12 @@ def initialize_chain(instructions, memory=None):
         input_variables=["history", "human_input"], template=template
     )
 
-    chain = LLMChain(
+    return LLMChain(
         llm=llm,
         prompt=prompt,
         verbose=True,
         memory=ConversationBufferWindowMemory(),
     )
-    return chain
 
 
 def initialize_meta_chain():
@@ -130,24 +125,21 @@ def initialize_meta_chain():
         input_variables=["chat_history"], template=meta_template
     )
 
-    meta_chain = LLMChain(
+    return LLMChain(
         llm=llm,
         prompt=meta_prompt,
         verbose=True,
     )
-    return meta_chain
 
 
 def get_chat_history(chain_memory):
     memory_key = chain_memory.memory_key
-    chat_history = chain_memory.load_memory_variables(memory_key)[memory_key]
-    return chat_history
+    return chain_memory.load_memory_variables(memory_key)[memory_key]
 
 
 def get_new_instructions(meta_output):
     delimiter = "Instructions: "
-    new_instructions = meta_output[meta_output.find(delimiter) + len(delimiter) :]
-    return new_instructions
+    return meta_output[meta_output.find(delimiter) + len(delimiter) :]
 
 
 def main(task, max_iters=3, max_meta_iters=5):
@@ -163,13 +155,13 @@ def main(task, max_iters=3, max_meta_iters=5):
         for j in range(max_iters):
             print(f"(Step {j+1}/{max_iters})")
             print(f"Assistant: {output}")
-            print(f"Human: ")
+            print("Human: ")
             human_input = input()
             if any(phrase in human_input.lower() for phrase in key_phrases):
                 break
             output = chain.predict(human_input=human_input)
         if success_phrase in human_input.lower():
-            print(f"You succeeded! Thanks for playing!")
+            print("You succeeded! Thanks for playing!")
             return
         meta_chain = initialize_meta_chain()
         meta_output = meta_chain.predict(chat_history=get_chat_history(chain.memory))
@@ -177,7 +169,7 @@ def main(task, max_iters=3, max_meta_iters=5):
         instructions = get_new_instructions(meta_output)
         print(f"New Instructions: {instructions}")
         print("\n" + "#" * 80 + "\n")
-    print(f"You failed! Thanks for playing!")
+    print("You failed! Thanks for playing!")
 
 
 task = input("Enter the objective of the AI system: (Be realistic!) ")

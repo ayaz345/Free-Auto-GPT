@@ -33,14 +33,10 @@ if select_model == "1":
         )
 
     start_chat = os.getenv("USE_EXISTING_CHAT", False)
-    if os.getenv("USE_GPT4") == "True":
-        model = "gpt4"
-    else:
-        model = "default"
-
+    model = "gpt4" if os.getenv("USE_GPT4") == "True" else "default"
     if start_chat:
         chat_id = os.getenv("CHAT_ID")
-        if chat_id == None:
+        if chat_id is None:
             raise ValueError("You have to set up your chat-id in the .env file")
         agent = agents.ChatGPTAgent(
             token=os.environ["CHATGPT_TOKEN"], conversation=chat_id, model=model
@@ -91,28 +87,26 @@ elif select_model == "4":
     agent = agents.BardChatAgent(token=cookie)
 elif select_model == "5":
     HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "your-huggingface-token")
-    if HF_TOKEN != "your-huggingface-token":
-        os.environ["HUGGINGFACEHUB_API_TOKEN"] = HF_TOKEN
-        huggingface_hub.login(token=HF_TOKEN)
-    else:
+    if HF_TOKEN == "your-huggingface-token":
         raise ValueError(
             "HuggingFace Token EMPTY. Edit the .env file and put your HuggingFace token"
         )
 
+    os.environ["HUGGINGFACEHUB_API_TOKEN"] = HF_TOKEN
+    huggingface_hub.login(token=HF_TOKEN)
     from transformers.tools import HfAgent
 
     agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder")
 
 elif select_model == "6":
     HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "your-huggingface-token")
-    if HF_TOKEN != "your-huggingface-token":
-        os.environ["HUGGINGFACEHUB_API_TOKEN"] = HF_TOKEN
-        huggingface_hub.login(token=HF_TOKEN)
-    else:
+    if HF_TOKEN == "your-huggingface-token":
         raise ValueError(
             "HuggingFace Token EMPTY. Edit the .env file and put your HuggingFace token"
         )
 
+    os.environ["HUGGINGFACEHUB_API_TOKEN"] = HF_TOKEN
+    huggingface_hub.login(token=HF_TOKEN)
     from transformers.tools import HfAgent
 
     agent = HfAgent("https://api-inference.huggingface.co/models/bigcode/starcoder")

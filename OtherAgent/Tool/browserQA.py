@@ -12,7 +12,6 @@ async def async_load_playwright(url: str) -> str:
         print(">>> PLAYWRIGHT INSTALLED <<<")
     except:
         print(">>> PLAYWRIGHT ALREADY INSTALLED <<<")
-        pass
     results = ""
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

@@ -38,17 +38,16 @@ class BingChat(LLM):
     async def call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
         if stop is not None:
             raise ValueError("stop kwargs are not permitted.")
-        #cookiepath is a must check
         if self.chatbot is None:
             if self.cookiepath is None:
                 raise ValueError("Need a COOKIE , check https://github.com/acheong08/EdgeGPT/tree/master#getting-authentication-required for get your COOKIE AND SAVE")
             else:
                 #if self.chatbot == None:
                 self.chatbot = await Chatbot.create(cookie_path=self.cookiepath)
-               
+
         if self.conversation_style is not None:
             self.conversation_style_on = self.select_conversation(self.conversation_style)
-            
+
         response = await self.chatbot.ask(prompt=prompt, conversation_style=self.conversation_style, search_result=self.search_result)
         """
         this is a sample response. 
@@ -62,10 +61,10 @@ class BingChat(LLM):
         """
         response_messages = response.get("item", {}).get("messages", [])
         response_text = response_messages[1].get("text", "")
-        
+
         if response_text == "":
             hidden_text = response_messages[1].get("hiddenText", "")
-            print(">>>> [DEBBUGGER] hidden_text = " + str(hidden_text) + " [DEBBUGGER] <<<<")
+            print(f">>>> [DEBBUGGER] hidden_text = {str(hidden_text)} [DEBBUGGER] <<<<")
             print(">>>> [DEBBUGGER] BING CHAT dont is open Like CHATGPT , BingCHAT have refused to respond. [DEBBUGGER] <<<<")
             response_text = hidden_text
             """
@@ -79,10 +78,10 @@ class BingChat(LLM):
             response_messages = response.get("item", {}).get("messages", [])
             response_text = response_messages[1].get("text", "")
             """
-        
+
         #add to history
         self.history_data.append({"prompt":prompt,"response":response_text})    
-        
+
         return response_text
     
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:

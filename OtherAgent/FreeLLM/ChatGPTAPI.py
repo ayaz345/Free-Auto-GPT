@@ -28,41 +28,33 @@ class ChatGPT(LLM):
         return "custom"
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        if stop is not None:
-            pass
-            #raise ValueError("stop kwargs are not permitted.")
-        #token is a must check
         if self.chatbot is None:
             if self.token is None:
                 raise ValueError("Need a token , check https://chat.openai.com/api/auth/session for get your token")
             else:
-                if self.conversation == "":
-                    self.chatbot = Chatbot(self.token)
-                elif self.conversation != "" :
-                    self.chatbot = Chatbot(self.token, conversation_id=self.conversation)
-                else:
-                    raise ValueError("Something went wrong")
-            
+                self.chatbot = (
+                    Chatbot(self.token)
+                    if self.conversation == ""
+                    else Chatbot(self.token, conversation_id=self.conversation)
+                )
         response = ""
-        # OpenAI: 50 requests / hour for each account
         if (self.call >= 45 and self.model == "default") or (self.call >= 23 and self.model == "gpt4"):
             raise ValueError("You have reached the maximum number of requests per hour ! Help me to Improve. Abusing this tool is at your own risk")
-        else:
-            sleep(2)
-            if self.model == "default":
-                data = self.chatbot.send_message(prompt)
-            elif self.model == "gpt4":
-                data = self.chatbot.send_message(prompt, model="gpt4")
-            #print(data)
-            response = data["message"]
-            self.conversation = data["conversation_id"]
-            FullResponse = data
-            
-            self.call += 1
-        
+        sleep(2)
+        if self.model == "default":
+            data = self.chatbot.send_message(prompt)
+        elif self.model == "gpt4":
+            data = self.chatbot.send_message(prompt, model="gpt4")
+        #print(data)
+        response = data["message"]
+        self.conversation = data["conversation_id"]
+        FullResponse = data
+
+        self.call += 1
+
         #add to history
         self.history_data.append({"prompt":prompt,"response":response})    
-        
+
         return response
 
     @property

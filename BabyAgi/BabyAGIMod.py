@@ -77,7 +77,7 @@ class BabyAGI(Chain, BaseModel):
     def prioritize_tasks(self, this_task_id: int, objective: str) -> List[Dict]:
         """Prioritize tasks."""
         task_names = [t["task_name"] for t in list(self.task_list)]
-        next_task_id = int(this_task_id) + 1
+        next_task_id = this_task_id + 1
         response = self.task_prioritization_chain.run(
             task_names=", ".join(task_names),
             next_task_id=str(next_task_id),
@@ -100,9 +100,7 @@ class BabyAGI(Chain, BaseModel):
     def _get_top_tasks(self, query: str, k: int) -> List[str]:
         """Get the top k tasks based on the query."""
         results = self.vectorstore.similarity_search(query, k=k)
-        if not results:
-            return []
-        return [str(item.metadata["task"]) for item in results]
+        return [] if not results else [str(item.metadata["task"]) for item in results]
 
     def execute_task(self, objective: str, task: str, k: int = 5) -> str:
         """Execute a task."""
@@ -121,8 +119,8 @@ class BabyAGI(Chain, BaseModel):
         first_task = inputs.get("first_task", "Make a todo list")
         self.add_task({"task_id": 1, "task_name": first_task})
         num_iters = 0
-        
-        
+
+
         dir_name=""
         if self.store:
             try:    
@@ -133,7 +131,7 @@ class BabyAGI(Chain, BaseModel):
             except:
                 print("ATTENTION: directory already exists, Delete the directory to store the results of evry task")
                 self.store = False
-                
+
         while True:
             if self.task_list:
                 self.print_task_list()
@@ -146,13 +144,13 @@ class BabyAGI(Chain, BaseModel):
                 result = self.execute_task(objective, task["task_name"])
                 this_task_id = int(task["task_id"])  # THIS LINE GIVE ERROR  WOLUD BE FIXED
                 self.print_task_result(result)
-                
+
                 if self.store:
                     # save the result in a file
                     self.write_step += 1
-                    with open(dir_name + "/" + str(self.write_step) + ".txt", "w") as f:
+                    with open(f"{dir_name}/{self.write_step}.txt", "w") as f:
                         f.write(result)
-                    print("<<BABY AGI>> : result saved in " + dir_name + "/" + str(self.write_step) +  ".txt")
+                    print(f"<<BABY AGI>> : result saved in {dir_name}/{self.write_step}.txt")
 
                 # Step 3: Store the result in Pinecone
                 result_id = f"result_{task['task_id']}"
@@ -174,22 +172,19 @@ class BabyAGI(Chain, BaseModel):
                 print(
                     "\033[91m\033[1m" + "\n*****TASK ENDING*****\n" + "\033[0m\033[0m"
                 )
-                
+
                 if self.store:
-                    #create final file to append in order by write_step 
-                    final_file = open(dir_name + "/" + "final.txt", "w")    
-                    all_step = os.listdir(dir_name)
-                    all_step.sort()
-                    for step in all_step:
-                        #append the result of each step in the final file
-                        with open(dir_name + "/" + step, "r") as f:
-                            final_file.write(f.read())
-                    final_file.close()
-                    
+                    with open(f"{dir_name}/final.txt", "w") as final_file:
+                        all_step = os.listdir(dir_name)
+                        all_step.sort()
+                        for step in all_step:
+                                                #append the result of each step in the final file
+                            with open(f"{dir_name}/{step}", "r") as f:
+                                final_file.write(f.read())
                     print(
                         "\033[91m\033[1m" + "\n*****RESULT STORED*****\n" + "\033[0m\033[0m"
                     )
-                    
+
                 break
         return {}
 

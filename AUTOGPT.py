@@ -46,14 +46,10 @@ if select_model == "1":
         )
 
     start_chat = os.getenv("USE_EXISTING_CHAT", False)
-    if os.getenv("USE_GPT4") == "True":
-        model = "gpt4"
-    else:
-        model = "default"
-
+    model = "gpt4" if os.getenv("USE_GPT4") == "True" else "default"
     if start_chat:
         chat_id = os.getenv("CHAT_ID")
-        if chat_id == None:
+        if chat_id is None:
             raise ValueError("You have to set up your chat-id in the .env file")
         llm = ChatGPTAPI.ChatGPT(
             token=os.environ["CHATGPT_TOKEN"], conversation=chat_id, model=model
@@ -157,8 +153,7 @@ def process_csv(
         if output_path is not None:
             instructions += f" Save output to disk at {output_path}"
         try:
-            result = agent.run(instructions)
-            return result
+            return agent.run(instructions)
         except Exception as e:
             return f"Error: {e}"
 
@@ -180,7 +175,6 @@ async def async_load_playwright(url: str) -> str:
         print(">>> PLAYWRIGHT INSTALLED <<<")
     except:
         print(">>> PLAYWRIGHT ALREADY INSTALLED <<<")
-        pass
     results = ""
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

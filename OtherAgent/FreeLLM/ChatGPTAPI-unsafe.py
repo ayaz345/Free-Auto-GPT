@@ -27,39 +27,29 @@ class ChatGPT(LLM):
         return "custom"
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        if stop is not None:
-            pass
-            #raise ValueError("stop kwargs are not permitted.")
-        #token is a must check
         if self.token is None:
             raise ValueError("Need a token , check https://chat.openai.com/api/auth/session for get your token")
+        if self.conversation == "":
+            self.chatbot = Chatbot(config={"access_token": self.token})
+        elif self.prev_message == "":
+            self.chatbot = Chatbot(config={"access_token": self.token}, conversation_id=self.conversation)
         else:
-            if self.conversation == "":
-                self.chatbot = Chatbot(config={"access_token": self.token})
-            elif self.conversation != "" and self.prev_message == "":
-                self.chatbot = Chatbot(config={"access_token": self.token}, conversation_id=self.conversation)
-            elif self.conversation != "" and self.prev_message != "":
-                    self.chatbot = Chatbot(config={"access_token": self.token}, conversation_id=self.conversation, parent_id=self.prev_message)
-            else:
-                raise ValueError("Something went wrong")
-            
+            self.chatbot = Chatbot(config={"access_token": self.token}, conversation_id=self.conversation, parent_id=self.prev_message)
         response = ""
-        # OpenAI: 50 requests / hour for each account
         if self.call >= 45:
             raise ValueError("You have reached the maximum number of requests per hour ! Help me to Improve. Abusing this tool is at your own risk")
-        else:
-            sleep(2)
-            for data in self.chatbot.ask( prompt , conversation_id=self.conversation, parent_id=self.prev_message):
-                response = data["message"]
-                FullResponse = data
-            
-            self.conversation = FullResponse["conversation_id"]
-            self.prev_message = FullResponse["parent_id"]
-            self.call += 1
-        
+        sleep(2)
+        for data in self.chatbot.ask( prompt , conversation_id=self.conversation, parent_id=self.prev_message):
+            response = data["message"]
+            FullResponse = data
+
+        self.conversation = FullResponse["conversation_id"]
+        self.prev_message = FullResponse["parent_id"]
+        self.call += 1
+
         #add to history
         self.history_data.append({"prompt":prompt,"response":response})    
-        
+
         return response
 
     @property

@@ -44,14 +44,10 @@ if select_model == "1":
         )
 
     start_chat = os.getenv("USE_EXISTING_CHAT", False)
-    if os.getenv("USE_GPT4") == "True":
-        model = "gpt4"
-    else:
-        model = "default"
-
+    model = "gpt4" if os.getenv("USE_GPT4") == "True" else "default"
     if start_chat:
         chat_id = os.getenv("CHAT_ID")
-        if chat_id == None:
+        if chat_id is None:
             raise ValueError("You have to set up your chat-id in the .env file")
         llm = ChatGPTAPI.ChatGPT(
             token=os.environ["CHATGPT_TOKEN"], conversation=chat_id, model=model
@@ -104,7 +100,7 @@ elif select_model == "4":
     llm = BardChatAPI.BardChat(cookie=cookie_path)
 
 
-    
+
 
 HF_TOKEN = os.getenv("HUGGINGFACE_TOKEN", "your-huggingface-token")
 
@@ -179,12 +175,7 @@ int_max_iterations = input(
 )
 max_iterations = int(int_max_iterations)
 
-if input("Do you want to store the results? (y/n) ") == "y":
-    store_results = True
-else:
-    store_results = False
-
-
+store_results = input("Do you want to store the results? (y/n) ") == "y"
 # If None, will keep on going forever
 max_iterations: Optional[int] = max_iterations
 baby_agi = BabyAGIMod.BabyAGI.from_llm(

@@ -38,5 +38,4 @@ def newEmbeddings(texts):
 def newEmbeddingFunction(texts):
     embeddings = newEmbeddings(texts)
     embeddings = np.array(embeddings, dtype=np.float32)
-    shaped_embeddings = reshape_array(embeddings)
-    return shaped_embeddings
+    return reshape_array(embeddings)

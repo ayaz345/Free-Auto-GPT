@@ -23,9 +23,6 @@ class BardChat(LLM):
         return "custom"
 
     async def call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        if stop is not None:
-            pass
-            #raise ValueError("stop kwargs are not permitted.")
         #cookie is a must check
         if self.chatbot is None:
             if self.cookie is None:
@@ -33,13 +30,13 @@ class BardChat(LLM):
             else:
                 #if self.chatbot == None:
                 self.chatbot = Chatbot(self.cookie)
-               
+
         response = self.chatbot.ask(prompt)
         #print(response)
         response_text = response['content']
         #add to history
         self.history_data.append({"prompt":prompt,"response":response_text})    
-        
+
         return response_text
     
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:

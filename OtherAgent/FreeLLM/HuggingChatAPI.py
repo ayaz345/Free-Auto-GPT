@@ -24,28 +24,23 @@ class HuggingChat(LLM):
         return "custom"
 
     def _call(self, prompt: str, stop: Optional[List[str]] = None) -> str:
-        if stop is not None:
-            pass
-            #raise ValueError("stop kwargs are not permitted.")
-        #token is a must check
         if self.chatbot is None:
             if self.cookiepath is None:
                 ValueError("Cookie path is required, pls check the documentation on github")
-            else: 
-                if self.conversation == "":
-                    self.chatbot = hugchat.ChatBot(cookie_path=self.cookiepath)
-                else:
-                    raise ValueError("Something went wrong")
-            
-        
+            elif self.conversation == "":
+                self.chatbot = hugchat.ChatBot(cookie_path=self.cookiepath)
+            else:
+                raise ValueError("Something went wrong")
+
+
         sleep(2)
         data = self.chatbot.chat(prompt, temperature=0.5, stream=False)
         #conversation_list = self.chatbot.get_conversation_list()
         #print(conversation_list)
-        
+
         #add to history
         self.history_data.append({"prompt":prompt,"response":data})    
-        
+
         return data
 
     @property
